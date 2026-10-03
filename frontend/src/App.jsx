@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "preact/hooks";
+import { WeeklyReport } from "./WeeklyReport.jsx";
 
 const TOKEN_KEY = "coldchain_token";
 const USER_KEY = "coldchain_user";
@@ -32,6 +33,7 @@ export function App() {
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
+  const [view, setView] = useState("readings");
 
   const authHeaders = useCallback(() => {
     const h = { "Content-Type": "application/json" };
@@ -176,82 +178,105 @@ export function App() {
         </div>
       </div>
 
-      {isWriter && (
-        <div class="card">
-          <h2 style={{ marginTop: 0, fontSize: "1.1rem" }}>提交读数</h2>
-          <form onSubmit={onSubmit}>
-            <div class="row">
-              <label>
-                探头编号
-                <input
-                  required
-                  value={submitForm.probe_id}
-                  onInput={(e) =>
-                    setSubmitForm({ ...submitForm, probe_id: e.target.value })
-                  }
-                  placeholder="例如 探头C03"
-                />
-              </label>
-              <label>
-                温度（℃）
-                <input
-                  required
-                  type="number"
-                  step="0.1"
-                  value={submitForm.temp_c}
-                  onInput={(e) =>
-                    setSubmitForm({ ...submitForm, temp_c: e.target.value })
-                  }
-                />
-              </label>
-              <button type="submit" disabled={loading}>
-                提交
-              </button>
-            </div>
-            {error && <p class="err">{error}</p>}
-            {msg && <p class="ok">{msg}</p>}
-          </form>
-        </div>
-      )}
+      <nav class="tabs">
+        <button
+          type="button"
+          class={view === "readings" ? "tab active" : "tab"}
+          onClick={() => setView("readings")}
+        >
+          读数列表
+        </button>
+        <button
+          type="button"
+          class={view === "weekly" ? "tab active" : "tab"}
+          onClick={() => setView("weekly")}
+        >
+          周报签出
+        </button>
+      </nav>
 
-      <div class="card">
-        <h2 style={{ marginTop: 0, fontSize: "1.1rem" }}>读数列表</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>编号</th>
-              <th>探头</th>
-              <th>温度℃</th>
-              <th>结论</th>
-              <th>说明</th>
-              <th>状态</th>
-              <th>提交人</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id}>
-                <td>{r.id}</td>
-                <td>{r.probe_id}</td>
-                <td>{r.temp_c}</td>
-                <td>
-                  <span class={verdictClass(r.verdict, r.status)}>
-                    {displayVerdict(r)}
-                  </span>
-                </td>
-                <td>{r.reason || "—"}</td>
-                <td>{r.status}</td>
-                <td>{r.created_by}</td>
-              </tr>
-            ))}
-            {rows.length === 0 && (
-              <tr>
-                <td colspan="7">暂无数据</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {view === "weekly" ? (
+        <WeeklyReport user={user} authHeaders={authHeaders} />
+      ) : (
+        <>
+          {isWriter && (
+            <div class="card">
+              <h2 style={{ marginTop: 0, fontSize: "1.1rem" }}>提交读数</h2>
+              <form onSubmit={onSubmit}>
+                <div class="row">
+                  <label>
+                    探头编号
+                    <input
+                      required
+                      value={submitForm.probe_id}
+                      onInput={(e) =>
+                        setSubmitForm({ ...submitForm, probe_id: e.target.value })
+                      }
+                      placeholder="例如 探头C03"
+                    />
+                  </label>
+                  <label>
+                    温度（℃）
+                    <input
+                      required
+                      type="number"
+                      step="0.1"
+                      value={submitForm.temp_c}
+                      onInput={(e) =>
+                        setSubmitForm({ ...submitForm, temp_c: e.target.value })
+                      }
+                    />
+                  </label>
+                  <button type="submit" disabled={loading}>
+                    提交
+                  </button>
+                </div>
+                {error && <p class="err">{error}</p>}
+                {msg && <p class="ok">{msg}</p>}
+              </form>
+            </div>
+          )}
+
+          <div class="card">
+            <h2 style={{ marginTop: 0, fontSize: "1.1rem" }}>读数列表</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>编号</th>
+                  <th>探头</th>
+                  <th>温度℃</th>
+                  <th>结论</th>
+                  <th>说明</th>
+                  <th>状态</th>
+                  <th>提交人</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.id}>
+                    <td>{r.id}</td>
+                    <td>{r.probe_id}</td>
+                    <td>{r.temp_c}</td>
+                    <td>
+                      <span class={verdictClass(r.verdict, r.status)}>
+                        {displayVerdict(r)}
+                      </span>
+                    </td>
+                    <td>{r.reason || "—"}</td>
+                    <td>{r.status}</td>
+                    <td>{r.created_by}</td>
+                  </tr>
+                ))}
+                {rows.length === 0 && (
+                  <tr>
+                    <td colspan="7">暂无数据</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   );
 }

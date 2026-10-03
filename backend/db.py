@@ -23,6 +23,20 @@ CREATE TABLE IF NOT EXISTS probe_readings (
     processed_at timestamptz
 );
 CREATE INDEX IF NOT EXISTS idx_probe_readings_status ON probe_readings (status, id);
+CREATE INDEX IF NOT EXISTS idx_probe_readings_processed_at ON probe_readings (processed_at);
+
+CREATE TABLE IF NOT EXISTS weekly_report_snapshots (
+    id serial PRIMARY KEY,
+    week_start date NOT NULL UNIQUE,
+    week_end date NOT NULL,
+    qualified_count integer NOT NULL,
+    overtemp_count integer NOT NULL,
+    total_count integer NOT NULL,
+    qualified_ratio double precision NOT NULL,
+    overtemp_ratio double precision NOT NULL,
+    created_by text NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
 """
 
 
