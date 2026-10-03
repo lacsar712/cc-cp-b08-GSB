@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "preact/hooks";
+import { WeeklyReport } from "./WeeklyReport.jsx";
 
 const TOKEN_KEY = "coldchain_token";
 const USER_KEY = "coldchain_user";
@@ -32,6 +33,7 @@ export function App() {
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
+  const [view, setView] = useState("desk");
 
   const authHeaders = useCallback(() => {
     const h = { "Content-Type": "application/json" };
@@ -89,6 +91,38 @@ export function App() {
     setToken(null);
     setUser(null);
     setRows([]);
+  }
+
+  // 周报页在两种角色下都展示；列表页与提交卡片维持原有内容，仅按视图切换。
+  if (token && view === "weekly") {
+    return (
+      <div class="wrap">
+        <div class="topbar">
+          <div>
+            <h1>冷链探头超温台</h1>
+            <p class="sub">周报签出落地页：在线汇总与只读副本。</p>
+          </div>
+          <div class="user">
+            {user?.username}（{user?.role === "writer" ? "记录员" : "值班员"}）
+            <button type="button" class="secondary" style={{ marginLeft: "0.5rem" }} onClick={logout}>
+              退出
+            </button>
+          </div>
+        </div>
+        <nav class="tabs">
+          <button type="button" class="tab" onClick={() => setView("desk")}>
+            读数台
+          </button>
+          <button type="button" class="tab active" onClick={() => setView("weekly")}>
+            周报签出
+          </button>
+        </nav>
+        <WeeklyReport
+          authHeaders={authHeaders}
+          isWriter={user?.role === "writer"}
+        />
+      </div>
+    );
   }
 
   async function onSubmit(e) {
@@ -175,6 +209,15 @@ export function App() {
           </button>
         </div>
       </div>
+
+      <nav class="tabs">
+        <button type="button" class="tab active" onClick={() => setView("desk")}>
+          读数台
+        </button>
+        <button type="button" class="tab" onClick={() => setView("weekly")}>
+          周报签出
+        </button>
+      </nav>
 
       {isWriter && (
         <div class="card">

@@ -23,6 +23,21 @@ CREATE TABLE IF NOT EXISTS probe_readings (
     processed_at timestamptz
 );
 CREATE INDEX IF NOT EXISTS idx_probe_readings_status ON probe_readings (status, id);
+
+-- 周报签出副本：一行即一次签出冻结的当周汇总，签出后任何新办结都不再改写它。
+CREATE TABLE IF NOT EXISTS weekly_checkouts (
+    id serial PRIMARY KEY,
+    week_key text NOT NULL UNIQUE,
+    week_start date NOT NULL,
+    week_end date NOT NULL,
+    pass_count integer NOT NULL,
+    fail_count integer NOT NULL,
+    total_count integer NOT NULL,
+    pass_ratio double precision NOT NULL,
+    fail_ratio double precision NOT NULL,
+    checked_out_by text NOT NULL,
+    checked_out_at timestamptz NOT NULL DEFAULT now()
+);
 """
 
 
